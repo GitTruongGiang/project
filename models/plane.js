@@ -16,5 +16,16 @@ const planeSchema = Schema(
   { timestamps: true }
 );
 
+planeSchema.methods.generateCodePlane = async function (length) {
+  const CODE_STRING = process.env.CODE_STRING;
+  let result = "";
+  const charactersLength = CODE_STRING.length;
+  for (let i = 0; i < length; i++) {
+    result += CODE_STRING.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
+};
+
 const Plane = mongoose.model("Plane", planeSchema);
 module.exports = Plane;

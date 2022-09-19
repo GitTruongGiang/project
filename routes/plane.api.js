@@ -1,6 +1,6 @@
 const express = require("express");
-const { body } = require("express-validator");
-const { createPlane } = require("../controller/plane.controller");
+const { body, param } = require("express-validator");
+const { createPlane, getPlane } = require("../controller/plane.controller");
 const authentication = require("../middlwe/authentication");
 const validations = require("../middlwe/validations");
 const router = express.Router();
@@ -11,7 +11,6 @@ router.post(
   authentication.loginRequired,
   validations.validate([
     body("name", "invalid name").exists().isString().notEmpty(),
-    body("codePlane", "invalid codePlane").exists().isString().notEmpty(),
     body("nameAirlines", "invalid nameAirlines")
       .exists()
       .isString()
@@ -23,5 +22,14 @@ router.post(
       ]),
   ]),
   createPlane
+);
+//get plane
+router.get(
+  "/:airlinesId",
+  authentication.loginRequired,
+  validations.validate([
+    param("airlinesId").exists().custom(validations.checkObjectId),
+  ]),
+  getPlane
 );
 module.exports = router;

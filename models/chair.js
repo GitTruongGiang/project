@@ -6,7 +6,12 @@ const chairSchema = Schema(
     flight: { type: Schema.Types.ObjectId, require: true, ref: "Flight" },
     codeNumber: { type: Number, required: true },
     codeString: { type: String, required: true },
-    status: { enum: ["none", "pending", "placed"] },
+    status: {
+      type: String,
+      required: true,
+      enum: ["none", "pending", "placed"],
+      default: "none",
+    },
   },
   { timestamps: true }
 );

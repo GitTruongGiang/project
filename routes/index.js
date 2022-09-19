@@ -10,6 +10,7 @@ const authApi = require("./auth.api");
 const airlinesApi = require("./airlines.api");
 const planeApi = require("./plane.api");
 const flightApi = require("./flight.api");
+const chairApi = require("./chair.api");
 //auth
 router.use("/auth", authApi);
 //users
@@ -20,4 +21,6 @@ router.use("/flights", flightApi);
 router.use("/airlines", airlinesApi);
 //plane
 router.use("/planes", planeApi);
+//chair
+router.use("/chairs", chairApi);
 module.exports = router;

@@ -8,6 +8,7 @@ const flightSchema = Schema(
     codePlane: { type: String, required: true },
     from: { type: String, required: true },
     to: { type: String, required: true },
+    fromDay: { type: Date, required: true, default: Date.now },
     timeFrom: { type: Date, required: true, default: Date.now },
     timeTo: { type: Date, required: true, default: Date.now },
     price: { type: Number, required: true },
