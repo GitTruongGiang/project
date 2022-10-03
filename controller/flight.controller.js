@@ -251,7 +251,7 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
     true,
     { flights, count, totalPage },
     null,
-    "get list flights success"
+    "get list flight success"
   );
 });
 //get single flight
