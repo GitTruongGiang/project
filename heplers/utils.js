@@ -13,9 +13,9 @@ utilsHelper.catchAsync = (func) => (req, res, next) =>
   func(req, res, next).catch((err) => next(err));
 
 class AppError extends Error {
-  constructor(status, message, errorType) {
+  constructor(statusCode, message, errorType) {
     super(message);
-    this.status = status;
+    this.statusCode = statusCode;
     this.errorType = errorType;
     this.isOperational = true;
     Error.captureStackTrace(this, this.constructor);

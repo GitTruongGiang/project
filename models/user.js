@@ -10,8 +10,20 @@ const userSchema = new Schema(
     password: { type: String, required: true, select: false },
     phone: { type: String, required: true },
     city: { type: String, required: false, default: "" },
+    avatarUrl: { type: String, required: false, default: "" },
     country: { type: String, required: false, default: "" },
-    isdeleted: { type: Boolean, defaul: true, select: false },
+    address: { type: String, required: false, default: "" },
+    facebookLink: { type: String, required: false, default: "" },
+    instagramLink: { type: String, required: false, default: "" },
+    linkedinLink: { type: String, required: false, default: "" },
+    twitterLink: { type: String, required: false, default: "" },
+    status: {
+      type: String,
+      required: true,
+      enum: ["no", "accepted"],
+      default: "no",
+    },
+    isdeleted: { type: Boolean, default: true, select: false },
   },
   { timestamps: true }
 );

@@ -38,6 +38,7 @@ airlinesController.getAirlines = catchAsync(async (req, res, next) => {
   const offset = (page - 1) * limit;
   const count = await Airlines.countDocuments(filterCriterial);
   const totalPage = Math.ceil(count / limit);
+
   const airlines = await Airlines.find(filterCriterial)
     .sort({ createAt: -1 })
     .skip(offset)

@@ -14,6 +14,7 @@ flightController.createFlight = catchAsync(async (req, res, next) => {
     codePlane,
     from,
     to,
+    imageUrl,
     fromDay,
     timeFrom,
     timeTo,
@@ -27,7 +28,11 @@ flightController.createFlight = catchAsync(async (req, res, next) => {
   if (!airlines)
     throw new AppError(400, "airline not found", "create flight error");
 
-  const plane = await Plane.findOne({ name: namePlane, codePlane });
+  const plane = await Plane.findOne({
+    name: namePlane,
+    codePlane,
+    authorAirlines: airlines._id,
+  });
   if (!plane) throw new AppError(400, "plane not found", "create flight error");
 
   const date = new Date(fromDay).getDate();
@@ -50,6 +55,7 @@ flightController.createFlight = catchAsync(async (req, res, next) => {
     codePlane,
     from,
     to,
+    imageUrl,
     fromDay,
     timeFrom,
     timeTo,
@@ -79,11 +85,11 @@ flightController.createFlight = catchAsync(async (req, res, next) => {
 //get flight
 flightController.getFlight = catchAsync(async (req, res, next) => {
   let { page, limit, ...filterQuery } = req.query;
-  let { fromDay, timeFrom, timeTo } = req.body;
-  const allowedFilterQuery = ["from", "to", "nameAirlines"];
+  const { timeFrom, timeTo, fromDay } = req.body;
 
+  const allowedFilterQuery = ["from", "to", "nameAirlines"];
   page = parseInt(page) || 1;
-  limit = parseInt(page) || 10;
+  limit = parseInt(limit) || 9;
   const filterKeys = Object.keys(filterQuery);
   filterKeys.forEach((key) => {
     if (!allowedFilterQuery.includes(key)) {
@@ -97,32 +103,73 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
   const date = new Date(fromDay).getDate();
   const month = new Date(fromDay).getMonth();
   const year = new Date(fromDay).getFullYear();
+  const DMY = new Date(year, month, date);
 
   const hoursFrom = new Date(timeFrom).getHours();
   const minuteFrom = new Date(timeFrom).getMinutes();
+  const secondsFrom = new Date(timeFrom).getSeconds();
 
   const hoursTo = new Date(timeTo).getHours();
   const minuteTo = new Date(timeTo).getMinutes();
+  const secondsTo = new Date(timeTo).getSeconds();
 
   const from = filterQuery.from.toLowerCase();
   const to = filterQuery.to.toLowerCase();
 
-  let flights = [];
-
   let filtercounditions = [
     { from: from },
     { to: to },
-    { fromDay: { $eq: new Date(year, month, date) } },
+    { fromDay: { $eq: DMY } },
   ];
 
+  console.log(fromDay);
+
   if (timeFrom) {
-    filtercounditions.push({
-      timeFrom: { $gte: new Date(year, month, date, hoursFrom, minuteFrom) },
-    });
-    if (timeTo) {
+    if (hoursFrom > 6 && hoursFrom !== 23) {
       filtercounditions.push({
-        timeTo: { $gte: new Date(year, month, date, hoursTo, minuteTo) },
+        timeFrom: {
+          $gte: new Date(year, month, date, hoursFrom - 6),
+          $lte: new Date(year, month, date, hoursFrom, minuteFrom, secondsFrom),
+        },
       });
+    } else if (hoursFrom === 23) {
+      filtercounditions.push({
+        timeFrom: {
+          $gte: new Date(year, month, date, 18),
+          $lte: new Date(year, month, date, hoursFrom, minuteFrom, secondsFrom),
+        },
+      });
+    } else {
+      filtercounditions.push({
+        timeFrom: {
+          $gte: DMY,
+          $lte: new Date(year, month, date, hoursFrom, minuteFrom, secondsFrom),
+        },
+      });
+    }
+    if (timeTo) {
+      if (hoursTo > 6 && hoursTo !== 23) {
+        filtercounditions.push({
+          timeTo: {
+            $gte: new Date(year, month, date, hoursTo - 6),
+            $lte: new Date(year, month, date, hoursTo, minuteTo, secondsTo),
+          },
+        });
+      } else if (hoursTo === 23) {
+        filtercounditions.push({
+          timeTo: {
+            $gte: new Date(year, month, date, 18),
+            $lte: new Date(year, month, date, hoursTo, minuteTo, secondsTo),
+          },
+        });
+      } else {
+        filtercounditions.push({
+          timeTo: {
+            $gte: DMY,
+            $lte: new Date(year, month, date, hoursTo, minuteTo, secondsTo),
+          },
+        });
+      }
       if (filterQuery.nameAirlines) {
         const nameAirlines = await Airlines.findById({
           _id: filterQuery.nameAirlines,
@@ -143,9 +190,37 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
       filtercounditions.push({ airlines: nameAirlines._id });
     }
   } else if (timeTo) {
-    filtercounditions.push({
-      timeTo: { $gte: new Date(year, month, date, hoursTo, minuteTo) },
-    });
+    if (hoursTo > 6 && hoursTo !== 23) {
+      filtercounditions.push({
+        timeTo: {
+          $gte: new Date(year, month, date, hoursTo - 6),
+          $lte: new Date(year, month, date, hoursTo, minuteTo, secondsTo),
+        },
+      });
+    } else if (hoursTo === 23) {
+      filtercounditions.push({
+        timeTo: {
+          $gte: new Date(year, month, date, 18),
+          $lte: new Date(year, month, date, hoursTo, minuteTo, secondsTo),
+        },
+      });
+    } else {
+      filtercounditions.push({
+        timeTo: {
+          $gte: DMY,
+          $lte: new Date(year, month, date, hoursTo, minuteTo, secondsTo),
+        },
+      });
+    }
+    if (filterQuery.nameAirlines) {
+      const nameAirlines = await Airlines.findById({
+        _id: filterQuery.nameAirlines,
+      });
+      if (!nameAirlines) {
+        sendResponse(res, 200, true, {}, null, "name airlines not found");
+      }
+      filtercounditions.push({ airlines: nameAirlines._id });
+    }
   } else if (filterQuery.nameAirlines) {
     const nameAirlines = await Airlines.findById({
       _id: filterQuery.nameAirlines,
@@ -155,11 +230,38 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
     }
     filtercounditions.push({ airlines: nameAirlines._id });
   }
+
   const filterCriterial = filtercounditions.length
     ? { $and: filtercounditions }
     : {};
 
-  flights = await Flight.find(filterCriterial);
-  sendResponse(res, 200, true, { flights }, null, "get list flights success");
+  const offset = limit * (page - 1);
+  const count = await Flight.countDocuments(filterCriterial);
+  const totalPage = Math.ceil(count / limit);
+  let flights = await Flight.find(filterCriterial)
+    .sort({ createAt: -1 })
+    .skip(offset)
+    .limit(limit)
+    .populate("airlines")
+    .populate("plane");
+
+  sendResponse(
+    res,
+    200,
+    true,
+    { flights, count, totalPage },
+    null,
+    "get list flights success"
+  );
+});
+//get single flight
+flightController.getFlightSingle = catchAsync(async (req, res, next) => {
+  const { flightId } = req.query;
+  const flight = await Flight.findById(flightId)
+    .populate("airlines")
+    .populate("plane");
+  if (!flight)
+    throw new AppError(400, "flight not found", "get single flight error");
+  sendResponse(res, 200, true, { flight }, null, "get single success");
 });
 module.exports = flightController;

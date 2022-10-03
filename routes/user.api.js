@@ -4,11 +4,19 @@ const {
   createUser,
   updateUser,
   deletedUser,
+  getUser,
 } = require("../controller/user.controller");
 const authentication = require("../middlwe/authentication");
 const validations = require("../middlwe/validations");
 const router = express.Router();
 
+// get user me
+router.get(
+  "/me",
+  authentication.loginRequired,
+  validations.validate([]),
+  getUser
+);
 //create user
 router.post(
   "/",
@@ -18,6 +26,8 @@ router.post(
       .exists()
       .isEmail()
       .normalizeEmail({ gmail_remove_dots: false }),
+    body("phone", "invalid phone").exists().isString(),
+    body("city", "invalid city").exists().isString(),
     body("password", "invalid password").exists().notEmpty(),
   ]),
   createUser

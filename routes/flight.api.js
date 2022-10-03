@@ -1,8 +1,13 @@
 const express = require("express");
 const { body } = require("express-validator");
-const { createFlight, getFlight } = require("../controller/flight.controller");
+const {
+  createFlight,
+  getFlight,
+  getFlightSingle,
+} = require("../controller/flight.controller");
 const authentication = require("../middlwe/authentication");
 const validations = require("../middlwe/validations");
+const { exists } = require("../models/airlines");
 const router = express.Router();
 
 // create flight
@@ -21,6 +26,7 @@ router.post(
       ]),
     body("namePlane", "invalid namePlane").exists().notEmpty(),
     body("codePlane", "invalid codePlane").exists().isString().notEmpty(),
+    body("imageUrl", "invalid imageUrl").exists().isString().notEmpty(),
     body("from", "invalid from").exists().isString().notEmpty(),
     body("to", "invalid to").exists().isString().notEmpty(),
     body("fromDay").exists().notEmpty(),
@@ -31,10 +37,19 @@ router.post(
   createFlight
 );
 // get flight
+router.post(
+  "/flight",
+  authentication.loginRequired,
+  validations.validate([
+    body("fromDay", "invalid fromDay").exists().notEmpty(),
+  ]),
+  getFlight
+);
+// get single flight
 router.get(
-  "/",
+  "/single",
   authentication.loginRequired,
   validations.validate([]),
-  getFlight
+  getFlightSingle
 );
 module.exports = router;

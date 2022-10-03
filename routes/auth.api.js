@@ -11,7 +11,7 @@ router.post(
       .exists()
       .isEmail()
       .normalizeEmail({ gmail_remove_dots: false }),
-    body("password").exists().notEmpty(),
+    body("password", "invalid password").exists().notEmpty(),
   ]),
   loginWithEmail
 );
