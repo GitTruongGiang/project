@@ -103,7 +103,8 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
   const date = new Date(fromDay).getDate();
   const month = new Date(fromDay).getMonth();
   const year = new Date(fromDay).getFullYear();
-  const DMY = new Date(year, month, date);
+  const DMY = new Date(`${year}, ${month + 1}, ${date}`);
+  console.log(month);
 
   const hoursFrom = new Date(timeFrom).getHours();
   const minuteFrom = new Date(timeFrom).getMinutes();
@@ -119,10 +120,12 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
   let filtercounditions = [
     { from: from },
     { to: to },
-    { fromDay: { $eq: DMY } },
+    {
+      fromDay: {
+        $eq: DMY,
+      },
+    },
   ];
-
-  console.log(fromDay);
 
   if (timeFrom) {
     if (hoursFrom > 6 && hoursFrom !== 23) {
@@ -142,7 +145,7 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
     } else {
       filtercounditions.push({
         timeFrom: {
-          $gte: DMY,
+          $gte: new Date(`${year}, ${month + 1}, ${date}`),
           $lte: new Date(year, month, date, hoursFrom, minuteFrom, secondsFrom),
         },
       });
@@ -239,7 +242,7 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
   const count = await Flight.countDocuments(filterCriterial);
   const totalPage = Math.ceil(count / limit);
   let flights = await Flight.find(filterCriterial)
-    .sort({ createAt: -1 })
+    .sort({ fromDay: 1 })
     .skip(offset)
     .limit(limit)
     .populate("airlines")
