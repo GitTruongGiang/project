@@ -42,6 +42,17 @@ const fakerFlights = async () => {
   const planesCode = planes.map((plane) => plane.codePlane);
   for (j = 0; j < 100; j++) {
     for (i = 0; i < planes.length; i++) {
+      const time = faker.date.between(
+        `${new Date("2022, 10, 1")}`,
+        `${new Date("2022, 10, 30")}`
+      );
+      const date = new Date(time).getDate();
+      const month = new Date(time).getMonth();
+      const year = new Date(time).getFullYear();
+      const timeto = faker.date.between(
+        `${new Date(year, month, date, 0, 0, 0)}`,
+        `${new Date(year, month, date, 23, 59, 59)}`
+      );
       const contrys = [
         "sg",
         "dn",
@@ -56,20 +67,10 @@ const fakerFlights = async () => {
       ];
       const data = {
         airlines: planes[i].authorAirlines._id,
-        fromDay: faker.date.between(
-          `${new Date("2022, 10, 1")}`,
-          `${new Date("2022, 10, 30")}`
-        ),
-        timeFrom: faker.date.between(
-          `${new Date("2022, 10, 1")}`,
-          `${new Date("2022, 10, 30")}`
-        ),
-        timeTo: faker.date.between(
-          `${new Date("2022, 10, 1")}`,
-          `${new Date("2022, 10, 30")}`
-        ),
-        price: faker.commerce.price(700000, 3000000, 0),
-        imageUrl: faker.image.image(960, 640, true),
+        fromDay: time,
+        timeFrom: time,
+        timeTo: timeto,
+        price: faker.commerce.price(700, 3000, 0),
         from: contrys[Math.floor(Math.random() * contrys.length)],
         to: contrys[Math.floor(Math.random() * contrys.length)],
         plane: planesId[i],
@@ -112,7 +113,7 @@ const fakerFlights = async () => {
     for (let i = 1; i < 24 / 4 + 1; i++) {
       for (let j = 1; j < 4 + 1; j++) {
         resultNumber = i - 1;
-        let chair = await Chair.insertMany({
+        let chair = await Chair.create({
           flight: countFlight._id,
           codeNumber: j,
           codeString: String[resultNumber],

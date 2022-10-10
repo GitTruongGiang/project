@@ -15,6 +15,7 @@ const airlinesSchema = Schema(
       unique: true,
     },
     countPlane: { type: Number, requrired: true, default: 0 },
+    imageUrl: { type: String, requrired: true, default: "" },
   },
   { timestamps: true }
 );

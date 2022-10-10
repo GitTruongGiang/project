@@ -14,7 +14,6 @@ flightController.createFlight = catchAsync(async (req, res, next) => {
     codePlane,
     from,
     to,
-    imageUrl,
     fromDay,
     timeFrom,
     timeTo,
@@ -55,7 +54,6 @@ flightController.createFlight = catchAsync(async (req, res, next) => {
     codePlane,
     from,
     to,
-    imageUrl,
     fromDay,
     timeFrom,
     timeTo,
@@ -104,7 +102,6 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
   const month = new Date(fromDay).getMonth();
   const year = new Date(fromDay).getFullYear();
   const DMY = new Date(`${year}, ${month + 1}, ${date}`);
-  console.log(month);
 
   const hoursFrom = new Date(timeFrom).getHours();
   const minuteFrom = new Date(timeFrom).getMinutes();
@@ -146,7 +143,7 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
       filtercounditions.push({
         timeFrom: {
           $gte: new Date(`${year}, ${month + 1}, ${date}`),
-          $lte: new Date(year, month, date, hoursFrom, minuteFrom, secondsFrom),
+          $lt: new Date(year, month, date, hoursFrom, minuteFrom, secondsFrom),
         },
       });
     }

@@ -26,7 +26,6 @@ router.post(
       ]),
     body("namePlane", "invalid namePlane").exists().notEmpty(),
     body("codePlane", "invalid codePlane").exists().isString().notEmpty(),
-    body("imageUrl", "invalid imageUrl").exists().isString().notEmpty(),
     body("from", "invalid from").exists().isString().notEmpty(),
     body("to", "invalid to").exists().isString().notEmpty(),
     body("fromDay").exists().notEmpty(),

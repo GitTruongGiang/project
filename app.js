@@ -3,6 +3,7 @@ require("dotenv").config();
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+const templaneEmail = require("./heplers/templaneEmail");
 
 var indexRouter = require("./routes/index");
 
@@ -14,7 +15,14 @@ const { AppError, sendResponse } = require("./heplers/utils");
 const mongoUri = process.env.MONGO_URI;
 mongoose
   .connect(mongoUri)
-  .then(() => console.log(`connect ${mongoUri} success`))
+  .then(() => {
+    templaneEmail.createSendEmail({
+      name: "flight",
+      subject: "booking",
+      template_key: "booking",
+    });
+    console.log("conncet mongodb success ");
+  })
   .catch((err) => console.log(err));
 
 app.use(cors());

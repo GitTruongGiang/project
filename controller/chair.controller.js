@@ -3,6 +3,11 @@ const mongoose = require("mongoose");
 const Chair = require("../models/chair");
 const Flight = require("../models/flight");
 const User = require("../models/user");
+const {
+  createSendEmail,
+  sendTo,
+  renderEmail,
+} = require("../heplers/templaneEmail");
 
 const chairController = {};
 const calculateUSerBookingCount = async (chair) => {
@@ -47,7 +52,11 @@ chairController.updateChair = catchAsync(async (req, res, next) => {
 
   let chair = await Chair.findById(chairId).populate("flight");
   if (!chair) throw new AppError(400, "chair not found", "update chair error");
+  const flight = await Flight.findById(chair.flight).populate("airlines");
 
+  const date = new Date(flight.fromDay).getDate();
+  const month = new Date(flight.fromDay).getMonth() + 1;
+  const year = new Date(flight.fromDay).getFullYear();
   const user = await mongoose
     .model("User")
     .findOne({ _id: userId, status: "no" });
@@ -56,6 +65,12 @@ chairController.updateChair = catchAsync(async (req, res, next) => {
   if (chair.status === "none" && status === "pending") {
     chair.status = status;
     chair.user = user._id;
+    await renderEmail({
+      html: `<h1>Hello, i come from ${flight.airlines.name}</h1> <br/> <p>you booking flight date: ${date}-${month}-${year}</p>`,
+      to: user.email,
+      template_key: "booking",
+      text: "check booking flight",
+    });
   }
   if (chair.status === "pending" && status === "placed") {
     chair.status = status;
@@ -64,6 +79,7 @@ chairController.updateChair = catchAsync(async (req, res, next) => {
 
   if (status === "placed") {
     await calculateUSerBookingCount(chair);
+    await sendTo({ template_key: "booking" });
   }
 
   sendResponse(res, 200, true, { chair }, null, "update chair success");
@@ -74,7 +90,6 @@ chairController.getsingleChair = catchAsync(async (req, res, next) => {
   const chair = await Chair.findById(chairId).populate("flight");
   if (!chair)
     throw new AppError(400, "chair not foun", "get single chair error");
-
   const flight = await Flight.findById(chair.flight)
     .populate("airlines")
     .populate("plane");
@@ -98,7 +113,6 @@ chairController.getListBooking = catchAsync(async (req, res, next) => {
   const flights = await Flight.findById(chairs.flight)
     .populate("airlines")
     .populate("plane");
-
   sendResponse(
     res,
     200,
