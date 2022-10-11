@@ -2,9 +2,7 @@ const sgMail = require("@sendgrid/mail");
 const SendEmail = require("../models/sendEmail");
 const { sendBooking } = require("./emailTemplane");
 const API_KEY_SEND_GRID =
-  "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";
-sgMail.setApiKey(API_KEY_SEND_GRID);
-
+  "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";
 const templaneEmail = {};
 
 templaneEmail.createSendEmail = async ({ name, subject, template_key }) => {
@@ -35,13 +33,14 @@ templaneEmail.renderEmail = async ({ data, to, template_key, text }) => {
 
 templaneEmail.sendTo = async ({ template_key }) => {
   try {
+    sgMail.setApiKey(API_KEY_SEND_GRID);
     const email = await SendEmail.findOne({ template_key: template_key });
     const message = {
       to: email.to,
       from: email.from,
+      subject: email.subject,
       text: email.text,
       html: email.html,
-      subject: email.subject,
     };
     await sgMail
       .send(message)

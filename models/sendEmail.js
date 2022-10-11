@@ -6,7 +6,7 @@ const sendEmailSchema = Schema({
   from: {
     type: String,
     required: true,
-    default: "nguyentruonggiang99hb@gmail.com",
+    default: "nguyentruonggiangvv@gmail.com",
   },
   text: { type: String, required: false, default: "" },
   html: { type: String, required: false, default: "" },
