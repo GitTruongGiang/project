@@ -87,7 +87,7 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
 
   const allowedFilterQuery = ["from", "to", "nameAirlines"];
   page = parseInt(page) || 1;
-  limit = parseInt(limit) || 9;
+  limit = parseInt(limit) || 10;
   const filterKeys = Object.keys(filterQuery);
   filterKeys.forEach((key) => {
     if (!allowedFilterQuery.includes(key)) {
