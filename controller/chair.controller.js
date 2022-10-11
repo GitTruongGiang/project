@@ -15,7 +15,7 @@ const calculateUSerBookingCount = async (chair) => {
   await Flight.findByIdAndUpdate(chair.flight, {
     userBookingCount: countUsers,
   });
-  // await sendTo({ template_key: "booking" });
+  await sendTo({ template_key: "booking" });
 };
 
 //create chair
@@ -62,12 +62,12 @@ chairController.updateChair = catchAsync(async (req, res, next) => {
   if (chair.status === "none" && status === "pending") {
     chair.status = status;
     chair.user = user._id;
-    // await renderEmail({
-    //   data: { flight, chair },
-    //   to: user.email,
-    //   template_key: "booking",
-    //   text: "check booking flight",
-    // });
+    await renderEmail({
+      data: { flight, chair },
+      to: user.email,
+      template_key: "booking",
+      text: "check booking flight",
+    });
   }
   if (chair.status === "pending" && status === "placed") {
     chair.status = status;
