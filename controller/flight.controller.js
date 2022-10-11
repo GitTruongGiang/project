@@ -242,7 +242,7 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
   console.log(x);
   console.log(filterCriterial);
   let flights = await Flight.find({
-    $and: [{ from: "sg" }, { to: "hn" }],
+    $and: [{ from: "sg" }, { to: "hn" }, { fromDay: { $eq: DMY } }],
   })
     // .sort({ fromDay: 1 })
     // .skip(offset)
