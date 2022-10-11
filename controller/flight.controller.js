@@ -238,19 +238,14 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
   const offset = limit * (page - 1);
   const count = await Flight.countDocuments(filterCriterial);
   const totalPage = Math.ceil(count / limit);
-  let x = await Flight.find().limit(20);
-  console.log(x);
-  console.log(filterCriterial);
-  let flights = await Flight.find({
-    $and: [{ from: "sg" }, { to: "hn" }, { fromDay: { $eq: DMY } }],
-  })
-    // .sort({ fromDay: 1 })
-    // .skip(offset)
-    .limit(limit);
-  // .populate("airlines")
-  // .populate("plane");
-  console.log(flights);
-  console.log(DMY);
+
+  let flights = await Flight.find(filterCriterial)
+    .sort({ fromDay: 1 })
+    .skip(offset)
+    .limit(limit)
+    .populate("airlines")
+    .populate("plane");
+
   sendResponse(
     res,
     200,
