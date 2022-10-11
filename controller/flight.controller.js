@@ -240,6 +240,7 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
   const totalPage = Math.ceil(count / limit);
   let x = await Flight.find().limit(20);
   console.log(x);
+  console.log(filterCriterial);
   let flights = await Flight.find(filterCriterial)
     .sort({ fromDay: 1 })
     .skip(offset)
