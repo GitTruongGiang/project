@@ -15,6 +15,7 @@ const calculateUSerBookingCount = async (chair) => {
   await Flight.findByIdAndUpdate(chair.flight, {
     userBookingCount: countUsers,
   });
+  await sendTo({ template_key: "booking" });
 };
 
 //create chair
@@ -53,10 +54,6 @@ chairController.updateChair = catchAsync(async (req, res, next) => {
   let chair = await Chair.findById(chairId).populate("flight");
   if (!chair) throw new AppError(400, "chair not found", "update chair error");
   const flight = await Flight.findById(chair.flight).populate("airlines");
-
-  const date = new Date(flight.fromDay).getDate();
-  const month = new Date(flight.fromDay).getMonth() + 1;
-  const year = new Date(flight.fromDay).getFullYear();
   const user = await mongoose
     .model("User")
     .findOne({ _id: userId, status: "no" });
@@ -66,7 +63,7 @@ chairController.updateChair = catchAsync(async (req, res, next) => {
     chair.status = status;
     chair.user = user._id;
     await renderEmail({
-      html: `<h1>Hello, i come from ${flight.airlines.name}</h1> <br/> <p>you booking flight date: ${date}-${month}-${year}</p>`,
+      data: { flight, chair },
       to: user.email,
       template_key: "booking",
       text: "check booking flight",
@@ -79,7 +76,6 @@ chairController.updateChair = catchAsync(async (req, res, next) => {
 
   if (status === "placed") {
     await calculateUSerBookingCount(chair);
-    await sendTo({ template_key: "booking" });
   }
 
   sendResponse(res, 200, true, { chair }, null, "update chair success");
