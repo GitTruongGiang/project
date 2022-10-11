@@ -1,8 +1,9 @@
 const sgMail = require("@sendgrid/mail");
 const SendEmail = require("../models/sendEmail");
 const { sendBooking } = require("./emailTemplane");
-
-sgMail.setApiKey(process.env.API_KEY_SEND_GRID);
+const API_KEY_SEND_GRID =
+  "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";
+sgMail.setApiKey(API_KEY_SEND_GRID);
 
 const templaneEmail = {};
 
