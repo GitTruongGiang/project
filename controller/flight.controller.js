@@ -243,9 +243,9 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
   let flights = await Flight.find(filterCriterial)
     .sort({ fromDay: 1 })
     .skip(offset)
-    .limit(limit)
-    .populate("airlines")
-    .populate("plane");
+    .limit(limit);
+  // .populate("airlines")
+  // .populate("plane");
   console.log(flights);
   sendResponse(
     res,
