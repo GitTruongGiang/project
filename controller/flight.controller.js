@@ -244,12 +244,13 @@ flightController.getFlight = catchAsync(async (req, res, next) => {
   let flights = await Flight.find({
     $and: [{ from: "sg" }, { to: "hn" }, { fromDay: { $eq: DMY } }],
   })
-    .sort({ fromDay: 1 })
-    .skip(offset)
+    // .sort({ fromDay: 1 })
+    // .skip(offset)
     .limit(limit);
   // .populate("airlines")
   // .populate("plane");
   console.log(flights);
+  console.log(DMY);
   sendResponse(
     res,
     200,
