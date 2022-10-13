@@ -10,12 +10,18 @@ const planeSchema = Schema(
       required: true,
       ref: "Airlines",
     },
+    userCreate: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     chairCount: { type: Number, required: true, default: 24 },
     rowChairCount: { type: Number, required: true, default: 4 },
   },
   { timestamps: true }
 );
 
+planeSchema.methods.toJSON = function () {
+  const plane = this._doc;
+  delete plane.userCreate;
+  return plane;
+};
 planeSchema.methods.generateCodePlane = async function (length) {
   const CODE_STRING = process.env.CODE_STRING;
   let result = "";

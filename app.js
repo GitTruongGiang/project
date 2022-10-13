@@ -16,11 +16,11 @@ const mongoUri = process.env.MONGO_URI;
 mongoose
   .connect(mongoUri)
   .then(() => {
-    // templaneEmail.createSendEmail({
-    //   name: "flight",
-    //   subject: "booking",
-    //   template_key: "booking",
-    // });
+    templaneEmail.createSendEmail({
+      name: "flight",
+      subject: "booking",
+      template_key: "booking",
+    });
     console.log("conncet mongodb success ");
   })
   .catch((err) => console.log(err));

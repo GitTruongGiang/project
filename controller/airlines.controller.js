@@ -15,7 +15,11 @@ airlinesController.createAirlines = catchAsync(async (req, res, next) => {
   if (airline)
     throw new AppError(400, "airlines already", "create airline error");
 
-  airline = await Airlines.create({ name, imageUrl });
+  airline = await Airlines.create({
+    name,
+    imageUrl,
+    userCreate: currentUserId,
+  });
   sendResponse(res, 200, true, { airline }, null, "create airlines success");
 });
 //get airlines
@@ -53,4 +57,35 @@ airlinesController.getAirlines = catchAsync(async (req, res, next) => {
     "get airlines success"
   );
 });
+//--------
+// user acount
+airlinesController.getListCreateAirlines = catchAsync(
+  async (req, res, next) => {
+    const curenUserId = req.userId;
+    let { page, limit } = req.query;
+    page = parseInt(page) || 1;
+    limit = parseInt(page) || 10;
+
+    const user = await User.findById(curenUserId);
+    if (user.status !== "accepted")
+      throw new AppError(400, "user not found", "get list create flight error");
+    const offset = limit * (page - 1);
+    const count = await Airlines.countDocuments({ userCreate: curenUserId });
+    const totalPage = Math.ceil(count / limit);
+    const airlines = await Airlines.find({ userCreate: curenUserId })
+      .sort({ createAt: -1 })
+      .skip(offset)
+      .limit(limit);
+    if (!airlines)
+      throw new AppError(400, "airlines not found", "get list flight error");
+    sendResponse(
+      res,
+      200,
+      true,
+      { airlines, count, totalPage },
+      null,
+      "get list airlines success"
+    );
+  }
+);
 module.exports = airlinesController;

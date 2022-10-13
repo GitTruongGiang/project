@@ -3,6 +3,7 @@ const { body } = require("express-validator");
 const {
   createAirlines,
   getAirlines,
+  getListCreateAirlines,
 } = require("../controller/airlines.controller");
 const authentication = require("../middlwe/authentication");
 const validations = require("../middlwe/validations");
@@ -11,18 +12,7 @@ const router = express.Router();
 router.post(
   "/",
   authentication.loginRequired,
-  validations.validate([
-    body("name")
-      .exists()
-      .isString()
-      .notEmpty()
-      .isIn([
-        "Vietnam Airlines",
-        "Vietjet Air",
-        "Jetstar Pacific Airlines",
-        "Bamboo Airways",
-      ]),
-  ]),
+  validations.validate([body("name").exists().isString().notEmpty()]),
   createAirlines
 );
 //get airlines
@@ -31,5 +21,12 @@ router.get(
   authentication.loginRequired,
   validations.validate([]),
   getAirlines
+);
+
+router.get(
+  "/acount",
+  authentication.loginRequired,
+  validations.validate([]),
+  getListCreateAirlines
 );
 module.exports = router;

@@ -11,15 +11,7 @@ router.post(
   authentication.loginRequired,
   validations.validate([
     body("name", "invalid name").exists().isString().notEmpty(),
-    body("nameAirlines", "invalid nameAirlines")
-      .exists()
-      .isString()
-      .isIn([
-        "Vietnam Airlines",
-        "Vietjet Air",
-        "Jetstar Pacific Airlines",
-        "Bamboo Airways",
-      ]),
+    body("nameAirlines", "invalid nameAirlines").exists().isString(),
   ]),
   createPlane
 );

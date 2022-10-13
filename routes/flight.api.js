@@ -4,6 +4,7 @@ const {
   createFlight,
   getFlight,
   getFlightSingle,
+  getListCreateFlight,
 } = require("../controller/flight.controller");
 const authentication = require("../middlwe/authentication");
 const validations = require("../middlwe/validations");
@@ -15,15 +16,7 @@ router.post(
   "/",
   authentication.loginRequired,
   validations.validate([
-    body("nameAirlines", "invalid nameAirlines")
-      .exists()
-      .isString()
-      .isIn([
-        "Vietnam Airlines",
-        "Vietjet Air",
-        "Jetstar Pacific Airlines",
-        "Bamboo Airways",
-      ]),
+    body("nameAirlines", "invalid nameAirlines").exists().isString(),
     body("namePlane", "invalid namePlane").exists().notEmpty(),
     body("codePlane", "invalid codePlane").exists().isString().notEmpty(),
     body("from", "invalid from").exists().isString().notEmpty(),
@@ -50,5 +43,13 @@ router.get(
   authentication.loginRequired,
   validations.validate([]),
   getFlightSingle
+);
+//-------------------
+// acount user
+router.get(
+  "/acount",
+  authentication.loginRequired,
+  validations.validate([]),
+  getListCreateFlight
 );
 module.exports = router;

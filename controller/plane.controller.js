@@ -13,7 +13,12 @@ const calculatePlaneCount = async (airlinesId) => {
 };
 //create plane
 planeController.createPlane = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
   const { name, codePlane, nameAirlines } = req.body;
+  const user = await User.findById(currentUserId);
+  if (user.status !== "accepted")
+    throw new AppError(400, "user not found", "create plane error");
+
   const airlines = await Airlines.findOne({ name: nameAirlines });
   if (!airlines)
     throw new AppError(
@@ -30,9 +35,11 @@ planeController.createPlane = catchAsync(async (req, res, next) => {
     name,
     codePlane,
     authorAirlines: airlines,
+    userCreate: currentUserId,
   });
 
   const code = plane.generateCodePlane(6);
+
   code.then(async (value) => {
     plane.codePlane = value;
     await plane.save();

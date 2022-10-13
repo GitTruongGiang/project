@@ -15,14 +15,15 @@ userController.getUser = catchAsync(async (req, res, next) => {
 });
 //create user
 userController.createUser = catchAsync(async (req, res, next) => {
-  let { name, email, password, phone, city } = req.body;
+  let { name, email, password, phone, city, status } = req.body;
+  console.log(status);
   let user = await User.findOne({ email });
   if (user) throw new AppError(400, "user already exists", "create user error");
   if (password.length < 8)
     throw new AppError(400, "password is length < 8", "create user error");
   const salt = await bcrypt.genSalt(10);
   password = await bcrypt.hash(password, salt);
-  user = await User.create({ name, email, password, phone, city });
+  user = await User.create({ name, email, password, phone, city, status });
   const accessToken = await user.generateToken();
 
   sendResponse(
