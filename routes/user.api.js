@@ -37,7 +37,10 @@ router.put(
   "/:userId",
   authentication.loginRequired,
   validations.validate([
-    param("userId").exists().isString().custom(validations.checkObjectId),
+    param("userId", "invalid userId")
+      .exists()
+      .isString()
+      .custom(validations.checkObjectId),
   ]),
   updateUser
 );

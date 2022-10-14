@@ -8,6 +8,7 @@ const {
   sendTo,
   renderEmail,
 } = require("../heplers/templaneEmail");
+const Airlines = require("../models/airlines");
 
 const chairController = {};
 const calculateUSerBookingCount = async (chair) => {
@@ -104,12 +105,16 @@ chairController.getsingleChair = catchAsync(async (req, res, next) => {
 //get list booking
 chairController.getListBooking = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
-  const chairs = await mongoose.model("Chair").findOne({ user: currentUserId });
+  let chairs = await Chair.find({ user: currentUserId }).populate("flight");
   if (!chairs) sendResponse(res, 200, true, {}, null, "không tìm thấy đặt chổ");
-  const flights = await Flight.findById(chairs.flight)
-    .populate("airlines")
-    .populate("plane");
-  sendResponse(
+  let flights = [];
+  for (let i = 0; i < chairs.length; i++) {
+    const flight = await Flight.findById(chairs[i].flight._id)
+      .populate("airlines")
+      .populate("plane");
+    flights.push(flight);
+  }
+  await sendResponse(
     res,
     200,
     true,
@@ -129,5 +134,23 @@ chairController.cancelChair = catchAsync(async (req, res, next) => {
   );
 
   sendResponse(res, 200, true, { chair }, null, "cancel success");
+});
+// get list chair with flight
+chairController.getListChair = catchAsync(async (req, res, next) => {
+  const flightId = req.params.flightId;
+  const chairs = await Chair.find({ flight: flightId })
+    .sort({
+      codeNumber: 1,
+    })
+    .populate("user");
+  console.log(chairs);
+  sendResponse(res, 200, true, { chairs }, null, "get list chairs success");
+});
+//delete chair
+chairController.deletedChair = catchAsync(async (req, res, next) => {
+  const chairId = req.params.chairId;
+  const { status } = req.body;
+  const chair = await Chair.findByIdAndUpdate(chairId, { status, user: null });
+  sendResponse(res, 200, true, { chair }, null, "deleted chair success");
 });
 module.exports = chairController;

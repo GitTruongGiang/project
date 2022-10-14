@@ -1,10 +1,11 @@
 const express = require("express");
-const { body } = require("express-validator");
+const { body, param } = require("express-validator");
 const {
   createFlight,
   getFlight,
   getFlightSingle,
   getListCreateFlight,
+  updateFlight,
 } = require("../controller/flight.controller");
 const authentication = require("../middlwe/authentication");
 const validations = require("../middlwe/validations");
@@ -51,5 +52,17 @@ router.get(
   authentication.loginRequired,
   validations.validate([]),
   getListCreateFlight
+);
+// update flight
+router.put(
+  "/:flightId",
+  authentication.loginRequired,
+  validations.validate([
+    param("flightId", "invalid flightId")
+      .exists()
+      .notEmpty()
+      .custom(validations.checkObjectId),
+  ]),
+  updateFlight
 );
 module.exports = router;

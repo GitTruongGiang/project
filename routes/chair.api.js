@@ -1,12 +1,13 @@
 const express = require("express");
 const { param } = require("express-validator");
 const {
-  createChair,
   getChair,
   updateChair,
   getsingleChair,
   getListBooking,
   cancelChair,
+  getListChair,
+  deletedChair,
 } = require("../controller/chair.controller");
 const authentication = require("../middlwe/authentication");
 const validations = require("../middlwe/validations");
@@ -59,5 +60,29 @@ router.post(
       .custom(validations.checkObjectId),
   ]),
   cancelChair
+);
+// user acount
+router.post(
+  "/acount/:flightId",
+  authentication.loginRequired,
+  validations.validate([
+    param("flightId", "invalid flightId")
+      .exists()
+      .notEmpty()
+      .custom(validations.checkObjectId),
+  ]),
+  getListChair
+);
+//deleted Chair
+router.delete(
+  "/acount/:chairId",
+  authentication.loginRequired,
+  validations.validate([
+    param("chairId", "invalid chairId")
+      .exists()
+      .notEmpty()
+      .custom(validations.checkObjectId),
+  ]),
+  deletedChair
 );
 module.exports = router;

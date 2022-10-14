@@ -83,6 +83,26 @@ flightController.createFlight = catchAsync(async (req, res, next) => {
   }
   sendResponse(res, 200, true, { flight }, null, "create flight success");
 });
+// update flight
+flightController.updateFlight = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
+  const flightId = req.params.flightId;
+  const user = await User.findById(currentUserId);
+  if (user.status !== "accepted")
+    throw new AppError(400, "user not found", "create flight error");
+
+  const flight = await Flight.findById(flightId);
+
+  const allows = ["from", "to", "fromDay", "timeTo", "timeFrom", "price"];
+
+  allows.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      flight[field] = req.body[field];
+    }
+  });
+  await flight.save();
+  sendResponse(res, 200, true, { flight }, null, "update flight success");
+});
 //get flight
 flightController.getFlight = catchAsync(async (req, res, next) => {
   let { page, limit, ...filterQuery } = req.query;
@@ -288,6 +308,7 @@ flightController.getListCreateFlight = catchAsync(async (req, res, next) => {
     .populate("plane");
   if (!flights)
     throw new AppError(400, "flights not found", "get list flight error");
+
   sendResponse(
     res,
     200,
