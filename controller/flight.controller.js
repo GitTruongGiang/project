@@ -308,7 +308,6 @@ flightController.getListCreateFlight = catchAsync(async (req, res, next) => {
     .populate("plane");
   if (!flights)
     throw new AppError(400, "flights not found", "get list flight error");
-
   sendResponse(
     res,
     200,
