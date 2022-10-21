@@ -55,7 +55,7 @@ router.get(
 );
 // update flight
 router.put(
-  "/:flightId",
+  "/acount/:flightId",
   authentication.loginRequired,
   validations.validate([
     param("flightId", "invalid flightId")

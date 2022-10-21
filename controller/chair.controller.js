@@ -11,12 +11,15 @@ const {
 const Airlines = require("../models/airlines");
 
 const chairController = {};
-const calculateUSerBookingCount = async (chair) => {
-  const countUsers = await Chair.countDocuments({ status: chair.status });
+const calculateUSerBookingCount = async ({ flight, chair }) => {
+  console.log(flight, chair);
+  const countUsers = await Chair.countDocuments({
+    flight: flight._id,
+    status: "placed",
+  });
   await Flight.findByIdAndUpdate(chair.flight, {
     userBookingCount: countUsers,
   });
-  await sendTo({ template_key: "booking" });
 };
 
 //create chair
@@ -71,12 +74,15 @@ chairController.updateChair = catchAsync(async (req, res, next) => {
     });
   }
   if (chair.status === "pending" && status === "placed") {
+    console.log("sadas");
     chair.status = status;
+    chair.dateBooking = new Date();
   }
   await chair.save();
 
   if (status === "placed") {
-    await calculateUSerBookingCount(chair);
+    await calculateUSerBookingCount({ flight, chair });
+    await sendTo({ template_key: "booking" });
   }
 
   sendResponse(res, 200, true, { chair }, null, "update chair success");
@@ -148,9 +154,54 @@ chairController.getListChair = catchAsync(async (req, res, next) => {
 });
 //delete chair
 chairController.deletedChair = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
   const chairId = req.params.chairId;
   const { status } = req.body;
-  const chair = await Chair.findByIdAndUpdate(chairId, { status, user: null });
-  sendResponse(res, 200, true, { chair }, null, "deleted chair success");
+  const user = await User.findById(currentUserId);
+  if (user.status === "accepted") {
+    const chair = await Chair.findByIdAndUpdate(chairId, {
+      status,
+      user: null,
+    });
+    sendResponse(res, 200, true, { chair }, null, "deleted chair success");
+  }
+});
+chairController.cancelFLight = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
+  const chairId = req.params.chairId;
+  const { status } = req.body;
+
+  const user = await User.findById(currentUserId);
+
+  if (user.status === "no") {
+    let chair = await Chair.findById(chairId);
+    const flight = await Flight.findById(chair.flight).populate("airlines");
+
+    const date = new Date(chair.dateBooking).getDate() + 3;
+    const month = new Date(chair.dateBooking).getMonth();
+    const year = new Date(chair.dateBooking).getFullYear();
+    if (new Date(year, month, date) >= new Date()) {
+      chair = await Chair.findByIdAndUpdate(
+        chairId,
+        {
+          status: status,
+          user: null,
+          dateBooking: null,
+        },
+        { new: true }
+      );
+      await calculateUSerBookingCount({ flight, chair });
+      sendResponse(res, 200, true, { chair }, null, "cancel flight success");
+    } else {
+      sendResponse(
+        res,
+        200,
+        true,
+        {},
+        null,
+        "you can't cancel your flight because it's been more than 3 days"
+      );
+    }
+  }
 });
 module.exports = chairController;

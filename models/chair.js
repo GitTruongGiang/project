@@ -7,6 +7,7 @@ const chairSchema = Schema(
     user: { type: Schema.Types.ObjectId, require: false, ref: "User" },
     codeNumber: { type: Number, required: true },
     codeString: { type: String, required: true },
+    dateBooking: { type: Date, required: false },
     status: {
       type: String,
       required: true,

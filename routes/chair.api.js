@@ -8,6 +8,7 @@ const {
   cancelChair,
   getListChair,
   deletedChair,
+  cancelFLight,
 } = require("../controller/chair.controller");
 const authentication = require("../middlwe/authentication");
 const validations = require("../middlwe/validations");
@@ -61,6 +62,17 @@ router.post(
   ]),
   cancelChair
 );
+router.post(
+  "/cancel/flight/:chairId",
+  authentication.loginRequired,
+  validations.validate([
+    param("chairId", "invalid chairId")
+      .exists()
+      .notEmpty()
+      .custom(validations.checkObjectId),
+  ]),
+  cancelFLight
+);
 // user acount
 router.post(
   "/acount/:flightId",
@@ -74,7 +86,7 @@ router.post(
   getListChair
 );
 //deleted Chair
-router.delete(
+router.post(
   "/acount/:chairId",
   authentication.loginRequired,
   validations.validate([
