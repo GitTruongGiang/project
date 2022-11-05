@@ -62,6 +62,7 @@ router.post(
   ]),
   cancelChair
 );
+// cancel flight
 router.post(
   "/cancel/flight/:chairId",
   authentication.loginRequired,

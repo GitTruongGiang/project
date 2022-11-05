@@ -37,14 +37,14 @@ const fakerFlights = async () => {
   // console.log(dataPlanes.length);
 
   let dataFlight = [];
-  const planes = await Plane.find({}).populate("authorAirlines");
+  const planes = await Plane.find().populate("authorAirlines");
   const planesId = planes.map((plane) => plane._id);
   const planesCode = planes.map((plane) => plane.codePlane);
   for (j = 0; j < 100; j++) {
     for (i = 0; i < planes.length; i++) {
       const time = faker.date.between(
-        `${new Date("2022, 10, 1")}`,
-        `${new Date("2022, 10, 30")}`
+        `${new Date("2022, 11, 1")}`,
+        `${new Date("2022, 11, 30")}`
       );
       const date = new Date(time).getDate();
       const month = new Date(time).getMonth();

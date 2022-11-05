@@ -12,7 +12,6 @@ const Airlines = require("../models/airlines");
 
 const chairController = {};
 const calculateUSerBookingCount = async ({ flight, chair }) => {
-  console.log(flight, chair);
   const countUsers = await Chair.countDocuments({
     flight: flight._id,
     status: "placed",
@@ -73,8 +72,8 @@ chairController.updateChair = catchAsync(async (req, res, next) => {
       text: "check booking flight",
     });
   }
+
   if (chair.status === "pending" && status === "placed") {
-    console.log("sadas");
     chair.status = status;
     chair.dateBooking = new Date();
   }
@@ -84,7 +83,6 @@ chairController.updateChair = catchAsync(async (req, res, next) => {
     await calculateUSerBookingCount({ flight, chair });
     await sendTo({ template_key: "booking" });
   }
-
   sendResponse(res, 200, true, { chair }, null, "update chair success");
 });
 //get single
@@ -139,7 +137,10 @@ chairController.cancelChair = catchAsync(async (req, res, next) => {
     { new: true }
   );
 
-  sendResponse(res, 200, true, { chair }, null, "cancel success");
+  const chairs = await Chair.find({ flight: chair.flight }).sort({
+    codeNumber: 1,
+  });
+  sendResponse(res, 200, true, { chairs }, null, "cancel success");
 });
 // get list chair with flight
 chairController.getListChair = catchAsync(async (req, res, next) => {
@@ -170,7 +171,6 @@ chairController.cancelFLight = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
   const chairId = req.params.chairId;
   const { status } = req.body;
-
   const user = await User.findById(currentUserId);
 
   if (user.status === "no") {
@@ -180,6 +180,7 @@ chairController.cancelFLight = catchAsync(async (req, res, next) => {
     const date = new Date(chair.dateBooking).getDate() + 3;
     const month = new Date(chair.dateBooking).getMonth();
     const year = new Date(chair.dateBooking).getFullYear();
+    console.log(chair);
     if (new Date(year, month, date) >= new Date()) {
       chair = await Chair.findByIdAndUpdate(
         chairId,
@@ -191,7 +192,24 @@ chairController.cancelFLight = catchAsync(async (req, res, next) => {
         { new: true }
       );
       await calculateUSerBookingCount({ flight, chair });
-      sendResponse(res, 200, true, { chair }, null, "cancel flight success");
+      let chairs = await Chair.find({ user: currentUserId }).populate("flight");
+      if (!chairs)
+        sendResponse(res, 200, true, {}, null, "không tìm thấy đặt chổ");
+      let flights = [];
+      for (let i = 0; i < chairs.length; i++) {
+        const flight = await Flight.findById(chairs[i].flight._id)
+          .populate("airlines")
+          .populate("plane");
+        flights.push(flight);
+      }
+      await sendResponse(
+        res,
+        200,
+        true,
+        { chair, flights },
+        null,
+        "cancel flight success"
+      );
     } else {
       sendResponse(
         res,
