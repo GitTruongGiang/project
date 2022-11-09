@@ -1,5 +1,6 @@
 const { catchAsync, sendResponse, AppError } = require("../heplers/utils");
 const Airlines = require("../models/airlines");
+const Plane = require("../models/plane");
 const User = require("../models/user");
 
 const airlinesController = {};
@@ -20,7 +21,14 @@ airlinesController.createAirlines = catchAsync(async (req, res, next) => {
     imageUrl,
     userCreate: currentUserId,
   });
-  sendResponse(res, 200, true, { airline }, null, "create airlines success");
+  sendResponse(
+    res,
+    200,
+    true,
+    { airlines: airline },
+    null,
+    "create airlines success"
+  );
 });
 //get airlines
 airlinesController.getAirlines = catchAsync(async (req, res, next) => {
@@ -88,4 +96,19 @@ airlinesController.getListCreateAirlines = catchAsync(
     );
   }
 );
+//delete airlines
+airlinesController.deleteAirlines = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
+  const airlineId = req.params.airlineId;
+  const user = await User.findById(currentUserId);
+  if (user.status !== "accepted")
+    throw new AppError(400, "user not found", "delete airline error");
+  let airline = await Airlines.findById(airlineId);
+  if (!airline)
+    throw new AppError(400, "airline not found", "delete airline error");
+  // let planes = await Plane.deleteMany({ authorAirlines: airline._id });
+  airline = await Airlines.findByIdAndDelete(airlineId);
+  const airlines = await Airlines.find({ userCreate: currentUserId });
+  sendResponse(res, 200, true, { airlines }, null, "delted airline success");
+});
 module.exports = airlinesController;

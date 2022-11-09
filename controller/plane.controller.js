@@ -47,7 +47,14 @@ planeController.createPlane = catchAsync(async (req, res, next) => {
 
   await calculatePlaneCount(airlines._id);
 
-  sendResponse(res, 200, true, { plane }, null, "create plane success");
+  sendResponse(
+    res,
+    200,
+    true,
+    { planeId: plane._id },
+    null,
+    "create plane success"
+  );
 });
 //get plane
 planeController.getPlane = catchAsync(async (req, res, next) => {
@@ -80,5 +87,47 @@ planeController.getPlane = catchAsync(async (req, res, next) => {
     .limit(limit);
 
   sendResponse(res, 200, true, { data: plane, count, totalPage });
+});
+//
+planeController.getListCreatePlane = catchAsync(async (req, res, next) => {
+  const curenUserId = req.userId;
+  let { page, limit } = req.query;
+  console.log(page, limit);
+  page = parseInt(page) || 1;
+  limit = parseInt(page) || 10;
+  const user = await User.findById(curenUserId);
+  if (user.status !== "accepted")
+    throw new AppError(400, "user not found", "get list create flight error");
+  console.log(user);
+  const offset = limit * (page - 1);
+  const count = await Plane.countDocuments({ userCreate: curenUserId });
+  const totalPage = Math.ceil(count / limit);
+  const planes = await Plane.find({ userCreate: curenUserId })
+    .sort({ createAt: -1 })
+    .skip(offset)
+    .limit(limit);
+
+  console.log(planes);
+  if (!planes)
+    throw new AppError(400, "planes not found", "get list flight error");
+
+  sendResponse(
+    res,
+    200,
+    true,
+    { planes, count, totalPage },
+    null,
+    "get list airlines success"
+  );
+});
+planeController.deletePlane = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
+  const planeId = req.params.planeId;
+  const user = await User.findById(currentUserId);
+  if (user.status !== "accepted")
+    throw new AppError(400, "user not found", "deleted plane error");
+  const plane = await Plane.findByIdAndDelete(planeId);
+  const planes = await Plane.find({ userCreate: currentUserId });
+  sendResponse(res, 200, true, { planes }, null, "deleted plane success");
 });
 module.exports = planeController;

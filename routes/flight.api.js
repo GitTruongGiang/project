@@ -6,6 +6,7 @@ const {
   getFlightSingle,
   getListCreateFlight,
   updateFlight,
+  deletedFlight,
 } = require("../controller/flight.controller");
 const authentication = require("../middlwe/authentication");
 const validations = require("../middlwe/validations");
@@ -18,8 +19,7 @@ router.post(
   authentication.loginRequired,
   validations.validate([
     body("nameAirlines", "invalid nameAirlines").exists().isString(),
-    body("namePlane", "invalid namePlane").exists().notEmpty(),
-    body("codePlane", "invalid codePlane").exists().isString().notEmpty(),
+    body("planeId", "invalid planeId").exists().notEmpty().isString(),
     body("from", "invalid from").exists().isString().notEmpty(),
     body("to", "invalid to").exists().isString().notEmpty(),
     body("fromDay").exists().notEmpty(),
@@ -64,5 +64,17 @@ router.put(
       .custom(validations.checkObjectId),
   ]),
   updateFlight
+);
+//delete Flight
+router.delete(
+  "/:flightId",
+  authentication.loginRequired,
+  validations.validate([
+    param("flightId", "invalid flightId")
+      .exists()
+      .notEmpty()
+      .custom(validations.checkObjectId),
+  ]),
+  deletedFlight
 );
 module.exports = router;

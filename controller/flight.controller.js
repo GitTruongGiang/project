@@ -10,17 +10,8 @@ const flightController = {};
 //create flight
 flightController.createFlight = catchAsync(async (req, res, next) => {
   const curenUserId = req.userId;
-  let {
-    nameAirlines,
-    namePlane,
-    codePlane,
-    from,
-    to,
-    fromDay,
-    timeFrom,
-    timeTo,
-    price,
-  } = req.body;
+  let { nameAirlines, planeId, from, to, fromDay, timeFrom, timeTo, price } =
+    req.body;
 
   from = from.toLowerCase();
   to = to.toLowerCase();
@@ -32,31 +23,31 @@ flightController.createFlight = catchAsync(async (req, res, next) => {
   if (!airlines)
     throw new AppError(400, "airline not found", "create flight error");
 
-  const plane = await Plane.findOne({
-    name: namePlane,
-    codePlane,
-    authorAirlines: airlines._id,
-  });
+  const plane = await Plane.findById(planeId);
   if (!plane) throw new AppError(400, "plane not found", "create flight error");
-
+  const codePlane = await plane.codePlane;
   let flight = await Flight.findOne({
     airlines: airlines._id,
     plane: plane._id,
     fromDay,
     timeFrom,
     timeTo,
-    codePlane: plane.codePlane,
+    codePlane,
   });
   if (flight) throw new AppError(400, "flight already", "create filght error");
-  console.log("ok");
+
+  const date = new Date(fromDay).getDate();
+  const month = new Date(fromDay).getMonth();
+  const year = new Date(fromDay).getFullYear();
+  const DMY = new Date(year, month, date);
 
   flight = await Flight.create({
     airlines,
-    plane,
-    codePlane,
+    plane: plane._id,
+    codePlane: plane.codePlane,
     from,
     to,
-    fromDay,
+    fromDay: DMY,
     timeFrom,
     timeTo,
     price,
@@ -316,5 +307,16 @@ flightController.getListCreateFlight = catchAsync(async (req, res, next) => {
     null,
     "get list flight success"
   );
+});
+flightController.deletedFlight = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
+  const flightId = req.params.flightId;
+  const user = await User.findById(currentUserId);
+  if (user.status !== "accepted")
+    throw new AppError(400, "user not found", "deleted flight error");
+  const chairs = await Chair.deleteMany({ flight: flightId });
+  const flight = await Flight.findByIdAndDelete(flightId);
+  const flights = await Flight.find({ userCreate: currentUserId });
+  sendResponse(res, 200, true, { flights }, null, "deleted flight success");
 });
 module.exports = flightController;
