@@ -18,7 +18,6 @@ router.post(
   "/",
   authentication.loginRequired,
   validations.validate([
-    body("nameAirlines", "invalid nameAirlines").exists().isString(),
     body("planeId", "invalid planeId").exists().notEmpty().isString(),
     body("from", "invalid from").exists().isString().notEmpty(),
     body("to", "invalid to").exists().isString().notEmpty(),
@@ -55,7 +54,7 @@ router.get(
 );
 // update flight
 router.put(
-  "/acount/:flightId",
+  "/acount/update/:flightId",
   authentication.loginRequired,
   validations.validate([
     param("flightId", "invalid flightId")

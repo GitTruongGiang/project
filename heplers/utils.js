@@ -22,4 +22,5 @@ class AppError extends Error {
   }
 }
 utilsHelper.AppError = AppError;
+
 module.exports = utilsHelper;

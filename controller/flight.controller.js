@@ -10,8 +10,7 @@ const flightController = {};
 //create flight
 flightController.createFlight = catchAsync(async (req, res, next) => {
   const curenUserId = req.userId;
-  let { nameAirlines, planeId, from, to, fromDay, timeFrom, timeTo, price } =
-    req.body;
+  let { planeId, from, to, fromDay, timeFrom, timeTo, price } = req.body;
 
   from = from.toLowerCase();
   to = to.toLowerCase();
@@ -19,15 +18,15 @@ flightController.createFlight = catchAsync(async (req, res, next) => {
   const user = await User.findById(curenUserId);
   if (user.status !== "accepted")
     throw new AppError(400, "user not found", "create flight error");
-  const airlines = await Airlines.findOne({ name: nameAirlines });
-  if (!airlines)
-    throw new AppError(400, "airline not found", "create flight error");
+  // const airlines = await Airlines.findOne({ name: nameAirlines });
+  // if (!airlines)
+  //   throw new AppError(400, "airline not found", "create flight error");
 
-  const plane = await Plane.findById(planeId);
+  const plane = await Plane.findById(planeId).populate("authorAirlines");
   if (!plane) throw new AppError(400, "plane not found", "create flight error");
   const codePlane = await plane.codePlane;
   let flight = await Flight.findOne({
-    airlines: airlines._id,
+    airlines: plane.authorAirlines._id,
     plane: plane._id,
     fromDay,
     timeFrom,
@@ -35,14 +34,14 @@ flightController.createFlight = catchAsync(async (req, res, next) => {
     codePlane,
   });
   if (flight) throw new AppError(400, "flight already", "create filght error");
-
+  console.log(flight);
   const date = new Date(fromDay).getDate();
   const month = new Date(fromDay).getMonth();
   const year = new Date(fromDay).getFullYear();
   const DMY = new Date(year, month, date);
 
   flight = await Flight.create({
-    airlines,
+    airlines: plane.authorAirlines._id,
     plane: plane._id,
     codePlane: plane.codePlane,
     from,
@@ -72,7 +71,8 @@ flightController.createFlight = catchAsync(async (req, res, next) => {
       });
     }
   }
-  sendResponse(res, 200, true, { flight }, null, "create flight success");
+  const flights = await Flight.find({ userCreate: curenUserId });
+  sendResponse(res, 200, true, { flights }, null, "create flight success");
 });
 // update flight
 flightController.updateFlight = catchAsync(async (req, res, next) => {
@@ -85,14 +85,17 @@ flightController.updateFlight = catchAsync(async (req, res, next) => {
   const flight = await Flight.findById(flightId);
 
   const allows = ["from", "to", "fromDay", "timeTo", "timeFrom", "price"];
-
+  console.log(req.body);
   allows.forEach((field) => {
-    if (req.body[field] !== undefined) {
+    if (req.body[field]) {
       flight[field] = req.body[field];
     }
   });
   await flight.save();
-  sendResponse(res, 200, true, { flight }, null, "update flight success");
+  const flights = await Flight.find({ userCreate: currentUserId })
+    .populate("airlines")
+    .populate("plane");
+  sendResponse(res, 200, true, { flights }, null, "update flight success");
 });
 //get flight
 flightController.getFlight = catchAsync(async (req, res, next) => {

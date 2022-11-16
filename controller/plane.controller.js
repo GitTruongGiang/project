@@ -14,19 +14,19 @@ const calculatePlaneCount = async (airlinesId) => {
 //create plane
 planeController.createPlane = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
-  const { name, codePlane, nameAirlines } = req.body;
+  const { name, codePlane, id } = req.body;
   const user = await User.findById(currentUserId);
   if (user.status !== "accepted")
     throw new AppError(400, "user not found", "create plane error");
-
-  const airlines = await Airlines.findOne({ name: nameAirlines });
+  console.log(id);
+  const airlines = await Airlines.findById(id);
   if (!airlines)
     throw new AppError(
       400,
       "airlines not found or name airlines not true",
       "create plane error"
     );
-
+  console.log(airlines);
   let plane = await Plane.findOne({ codePlane });
   if (plane)
     throw new AppError(400, "code plane already", "create plane error");
@@ -92,22 +92,20 @@ planeController.getPlane = catchAsync(async (req, res, next) => {
 planeController.getListCreatePlane = catchAsync(async (req, res, next) => {
   const curenUserId = req.userId;
   let { page, limit } = req.query;
-  console.log(page, limit);
   page = parseInt(page) || 1;
   limit = parseInt(page) || 10;
   const user = await User.findById(curenUserId);
   if (user.status !== "accepted")
     throw new AppError(400, "user not found", "get list create flight error");
-  console.log(user);
   const offset = limit * (page - 1);
   const count = await Plane.countDocuments({ userCreate: curenUserId });
   const totalPage = Math.ceil(count / limit);
   const planes = await Plane.find({ userCreate: curenUserId })
+    .populate("authorAirlines")
     .sort({ createAt: -1 })
     .skip(offset)
     .limit(limit);
 
-  console.log(planes);
   if (!planes)
     throw new AppError(400, "planes not found", "get list flight error");
 
@@ -129,5 +127,65 @@ planeController.deletePlane = catchAsync(async (req, res, next) => {
   const plane = await Plane.findByIdAndDelete(planeId);
   const planes = await Plane.find({ userCreate: currentUserId });
   sendResponse(res, 200, true, { planes }, null, "deleted plane success");
+});
+planeController.updatePlane = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
+  const planeId = req.params.planeId;
+  const user = await User.findById(currentUserId);
+  if (user.status !== "accepted")
+    throw new AppError(400, "user not found", "update plane error");
+  let plane = await Plane.findById(planeId);
+  if (!plane) throw new AppError(400, "plane not found", "update plane error");
+  const allows = ["name", "chairCount"];
+  allows.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      plane[field] = req.body[field];
+    }
+  });
+  await plane.save();
+  const planes = await Plane.find({ userCreate: currentUserId });
+  sendResponse(res, 200, true, { planes }, null, "Update User Success");
+});
+planeController.listPlaneOfAirline = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
+  const airlineId = req.params.airlineId;
+  let { page, limit } = req.query;
+  console.log(req.query);
+  page = parseInt(page) || 1;
+  limit = parseInt(page) || 10;
+  const user = await User.findById(currentUserId);
+  if (user.status !== "accepted")
+    throw new AppError(400, "user not found", "update plane error");
+  const offset = limit * (page - 1);
+  const airline = await Airlines.findById(airlineId);
+  if (!airline)
+    throw new AppError(
+      400,
+      "airline not found",
+      "get list plane of airline error"
+    );
+  const count = await Plane.countDocuments({
+    userCreate: currentUserId,
+    authorAirlines: airline._id,
+  });
+  const totalPage = Math.ceil(count / limit);
+  console.log(totalPage);
+  const planes = await Plane.find({
+    userCreate: currentUserId,
+    authorAirlines: airline._id,
+  })
+    .populate("authorAirlines")
+    .sort({ createAt: -1 })
+    .skip(offset)
+    .limit(limit);
+  if (!planes) sendResponse(res, 200, true, {}, null, "not plane");
+  sendResponse(
+    res,
+    200,
+    true,
+    { planes, count, totalPage },
+    null,
+    "get list plane of airline success"
+  );
 });
 module.exports = planeController;

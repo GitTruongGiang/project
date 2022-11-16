@@ -145,16 +145,32 @@ chairController.cancelChair = catchAsync(async (req, res, next) => {
 // get list chair with flight
 chairController.getListChair = catchAsync(async (req, res, next) => {
   const flightId = req.params.flightId;
+  let { page, limit } = req.query;
+  page = parseInt(page) || 1;
+  limit = parseInt(limit) || 12;
+  const offset = limit * (page - 1);
+  const flight = await Flight.findById(flightId);
+  const count = await Chair.countDocuments({ flight: flightId });
+  const totalPage = Math.ceil(count / limit);
   const chairs = await Chair.find({ flight: flightId })
     .sort({
       codeNumber: 1,
     })
+    .skip(offset)
+    .limit(limit)
     .populate("user");
   console.log(chairs);
-  sendResponse(res, 200, true, { chairs }, null, "get list chairs success");
+  sendResponse(
+    res,
+    200,
+    true,
+    { chairs, count, totalPage },
+    null,
+    "get list chairs success"
+  );
 });
 //delete chair
-chairController.deletedChair = catchAsync(async (req, res, next) => {
+chairController.updateUserChair = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
   const chairId = req.params.chairId;
   const { status } = req.body;

@@ -5,6 +5,8 @@ const {
   getPlane,
   getListCreatePlane,
   deletePlane,
+  updatePlane,
+  listPlaneOfAirline,
 } = require("../controller/plane.controller");
 const authentication = require("../middlwe/authentication");
 const validations = require("../middlwe/validations");
@@ -16,7 +18,7 @@ router.post(
   authentication.loginRequired,
   validations.validate([
     body("name", "invalid name").exists().isString().notEmpty(),
-    body("nameAirlines", "invalid nameAirlines").exists().isString(),
+    body("id", "invalid id").exists().isString(),
   ]),
   createPlane
 );
@@ -46,5 +48,27 @@ router.delete(
       .custom(validations.checkObjectId),
   ]),
   deletePlane
+);
+router.put(
+  "/acount/update/:planeId",
+  authentication.loginRequired,
+  validations.validate([
+    param("planeId", "invalid planeId")
+      .exists()
+      .notEmpty()
+      .custom(validations.checkObjectId),
+  ]),
+  updatePlane
+);
+router.post(
+  "/acount/listPlaneOfAirline/:airlineId",
+  authentication.loginRequired,
+  validations.validate([
+    param("airlineId", "airlineId invalid")
+      .exists()
+      .notEmpty()
+      .custom(validations.checkObjectId),
+  ]),
+  listPlaneOfAirline
 );
 module.exports = router;

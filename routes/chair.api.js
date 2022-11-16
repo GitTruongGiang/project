@@ -7,8 +7,8 @@ const {
   getListBooking,
   cancelChair,
   getListChair,
-  deletedChair,
   cancelFLight,
+  updateUserChair,
 } = require("../controller/chair.controller");
 const authentication = require("../middlwe/authentication");
 const validations = require("../middlwe/validations");
@@ -87,7 +87,7 @@ router.post(
   getListChair
 );
 //deleted Chair
-router.post(
+router.put(
   "/acount/:chairId",
   authentication.loginRequired,
   validations.validate([
@@ -96,6 +96,6 @@ router.post(
       .notEmpty()
       .custom(validations.checkObjectId),
   ]),
-  deletedChair
+  updateUserChair
 );
 module.exports = router;

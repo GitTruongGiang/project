@@ -106,9 +106,37 @@ airlinesController.deleteAirlines = catchAsync(async (req, res, next) => {
   let airline = await Airlines.findById(airlineId);
   if (!airline)
     throw new AppError(400, "airline not found", "delete airline error");
-  // let planes = await Plane.deleteMany({ authorAirlines: airline._id });
   airline = await Airlines.findByIdAndDelete(airlineId);
   const airlines = await Airlines.find({ userCreate: currentUserId });
   sendResponse(res, 200, true, { airlines }, null, "delted airline success");
+});
+// list create Airlines
+airlinesController.listCreateAirlines = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
+  const user = await User.findById(currentUserId);
+  if (user.status !== "accepted")
+    throw new AppError(400, "user not found", "get list airline error");
+  const airlines = await Airlines.find({ userCreate: currentUserId });
+  sendResponse(res, 200, true, { airlines }, null, "get list airlines sucess");
+});
+//update airlines create
+airlinesController.updateAirline = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
+  const airlineId = req.params.airlineId;
+  const user = await User.findById(currentUserId);
+  if (user.status !== "accepted")
+    throw new AppError(400, "user not found", "get list airline error");
+  const airline = await Airlines.findById(airlineId);
+  if (!airline)
+    throw new AppError(400, "airline not found", "udpate airline error");
+  const allows = ["name"];
+  allows.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      airline[field] = req.body[field];
+    }
+  });
+  await airline.save();
+  const airlines = await Airlines.find({ userCreate: currentUserId });
+  sendResponse(res, 200, true, { airlines }, null, "Update User Success");
 });
 module.exports = airlinesController;
