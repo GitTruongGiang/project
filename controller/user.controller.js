@@ -78,5 +78,5 @@ userController.deletedUser = catchAsync(async (req, res, next) => {
 
   sendResponse(res, 200, true, { user }, null, "success");
 });
-
+// acount
 module.exports = userController;

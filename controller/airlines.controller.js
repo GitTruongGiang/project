@@ -106,7 +106,7 @@ airlinesController.deleteAirlines = catchAsync(async (req, res, next) => {
   let airline = await Airlines.findById(airlineId);
   if (!airline)
     throw new AppError(400, "airline not found", "delete airline error");
-  airline = await Airlines.findByIdAndDelete(airlineId);
+  // airline = await Airlines.findByIdAndDelete(airlineId);
   const airlines = await Airlines.find({ userCreate: currentUserId });
   sendResponse(res, 200, true, { airlines }, null, "delted airline success");
 });
