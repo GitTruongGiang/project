@@ -1,5 +1,7 @@
 const { catchAsync, sendResponse, AppError } = require("../heplers/utils");
 const Airlines = require("../models/airlines");
+const Chair = require("../models/chair");
+const Flight = require("../models/flight");
 const Plane = require("../models/plane");
 const User = require("../models/user");
 
@@ -106,7 +108,17 @@ airlinesController.deleteAirlines = catchAsync(async (req, res, next) => {
   let airline = await Airlines.findById(airlineId);
   if (!airline)
     throw new AppError(400, "airline not found", "delete airline error");
-  // airline = await Airlines.findByIdAndDelete(airlineId);
+
+  const flights = await Flight.find({ airlines: airlineId });
+  for (let i = 0; i < flights.length; i++) {
+    const chairs = await Chair.deleteMany({ flight: flights[i]._id });
+  }
+  const flight = await Flight.deleteMany({ airlines: airlineId });
+  const planes = await Plane.deleteMany({
+    authorAirlines: airline._id,
+    userCreate: currentUserId,
+  });
+  airline = await Airlines.findByIdAndDelete(airlineId);
   const airlines = await Airlines.find({ userCreate: currentUserId });
   sendResponse(res, 200, true, { airlines }, null, "delted airline success");
 });
