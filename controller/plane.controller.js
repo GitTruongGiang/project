@@ -93,7 +93,7 @@ planeController.getListCreatePlane = catchAsync(async (req, res, next) => {
   const curenUserId = req.userId;
   let { page, limit } = req.query;
   page = parseInt(page) || 1;
-  limit = parseInt(page) || 10;
+  limit = parseInt(limit) || 10;
   const user = await User.findById(curenUserId);
   if (user.status !== "accepted")
     throw new AppError(400, "user not found", "get list create flight error");

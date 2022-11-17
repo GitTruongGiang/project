@@ -23,14 +23,7 @@ airlinesController.createAirlines = catchAsync(async (req, res, next) => {
     imageUrl,
     userCreate: currentUserId,
   });
-  sendResponse(
-    res,
-    200,
-    true,
-    { airlines: airline },
-    null,
-    "create airlines success"
-  );
+  sendResponse(res, 200, true, { airline }, null, "create airlines success");
 });
 //get airlines
 airlinesController.getAirlines = catchAsync(async (req, res, next) => {
@@ -74,7 +67,7 @@ airlinesController.getListCreateAirlines = catchAsync(
     const curenUserId = req.userId;
     let { page, limit } = req.query;
     page = parseInt(page) || 1;
-    limit = parseInt(page) || 10;
+    limit = parseInt(limit) || 10;
 
     const user = await User.findById(curenUserId);
     if (user.status !== "accepted")
@@ -83,7 +76,9 @@ airlinesController.getListCreateAirlines = catchAsync(
     const count = await Airlines.countDocuments({ userCreate: curenUserId });
     const totalPage = Math.ceil(count / limit);
     const airlines = await Airlines.find({ userCreate: curenUserId })
-      .sort({ createAt: -1 })
+      .sort({
+        createAt: -1,
+      })
       .skip(offset)
       .limit(limit);
     if (!airlines)
