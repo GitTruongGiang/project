@@ -16,7 +16,6 @@ userController.getUser = catchAsync(async (req, res, next) => {
 //create user
 userController.createUser = catchAsync(async (req, res, next) => {
   let { name, email, password, phone, city, status } = req.body;
-  console.log(status);
   let user = await User.findOne({ email });
   if (user) throw new AppError(400, "user already exists", "create user error");
   if (password.length < 8)

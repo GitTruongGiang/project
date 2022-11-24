@@ -233,7 +233,7 @@ chairController.cancelFLight = catchAsync(async (req, res, next) => {
         true,
         {},
         null,
-        "you can't cancel your flight because it's been more than 3 days"
+        "bạn không thể hủy bỏ chuyến bay, vì đã quá hạn 3 ngày"
       );
     }
   }
