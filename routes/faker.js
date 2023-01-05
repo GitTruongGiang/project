@@ -43,8 +43,8 @@ const fakerFlights = async () => {
   for (j = 0; j < 100; j++) {
     for (i = 0; i < planes.length; i++) {
       const time = faker.date.between(
-        `${new Date("2022, 12, 1")}`,
-        `${new Date("2022, 12, 30")}`
+        `${new Date("2023, 1, 1")}`,
+        `${new Date("2023, 1, 31")}`
       );
       const date = new Date(time).getDate();
       const month = new Date(time).getMonth();

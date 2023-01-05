@@ -12,7 +12,8 @@ airlinesController.createAirlines = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
   const { name, imageUrl } = req.body;
   const user = await User.findById(currentUserId);
-  if (!user) throw new AppError(400, "user not found", "create airline error");
+  if (user.status !== "accepted")
+    throw new AppError(400, "user not found", "create airline error");
 
   let airline = await Airlines.findOne({ name });
   if (airline)

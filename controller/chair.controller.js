@@ -9,6 +9,7 @@ const {
   renderEmail,
 } = require("../heplers/templaneEmail");
 const Airlines = require("../models/airlines");
+const Booking = require("../models/booking");
 
 const chairController = {};
 const calculateUSerBookingCount = async ({ flight, chair }) => {
@@ -51,12 +52,13 @@ chairController.getChair = catchAsync(async (req, res, next) => {
 });
 // update chair
 chairController.updateChair = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId
   const chairId = req.params.chairId;
   const { status, userId } = req.body;
 
   let chair = await Chair.findById(chairId).populate("flight");
   if (!chair) throw new AppError(400, "chair not found", "update chair error");
-  const flight = await Flight.findById(chair.flight).populate("airlines");
+  const flight = await Flight.findById(chair.flight).populate("airlines").populate("plane");
   const user = await mongoose
     .model("User")
     .findOne({ _id: userId, status: "no" });
@@ -82,6 +84,25 @@ chairController.updateChair = catchAsync(async (req, res, next) => {
   if (status === "placed") {
     await calculateUSerBookingCount({ flight, chair });
     await sendTo({ template_key: "booking" });
+  }
+
+  if (chair.status === "placed") {
+    let booking = await Booking.create({
+      airlines:flight.airlines._id,
+      plane: flight.plane._id,
+      chair: chair._id ,
+      user : currentUserId,
+      from :flight.from,
+      to: flight.to,
+      fromDay: flight.fromDay,
+      timeFrom : flight.timeFrom,
+      timeTo : flight.timeTo,
+      price : flight.price,
+      codeNumber: chair.codeNumber,
+      codeString: chair.codeString,
+      dateBooking: chair.dateBooking
+    })
+    console.log(booking)
   }
   sendResponse(res, 200, true, { chair }, null, "update chair success");
 });
@@ -109,20 +130,22 @@ chairController.getsingleChair = catchAsync(async (req, res, next) => {
 //get list booking
 chairController.getListBooking = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
-  let chairs = await Chair.find({ user: currentUserId }).populate("flight");
-  if (!chairs) sendResponse(res, 200, true, {}, null, "không tìm thấy đặt chổ");
-  let flights = [];
-  for (let i = 0; i < chairs.length; i++) {
-    const flight = await Flight.findById(chairs[i].flight._id)
-      .populate("airlines")
-      .populate("plane");
-    flights.push(flight);
-  }
+  let bookings = await Booking.find({user : currentUserId}).populate("airlines").populate("plane")
+  if (!bookings) sendResponse(res, 200, true, null, null, "không tìm thấy đặt chổ");
+  // let chairs = await Chair.find({ user: currentUserId }).populate("flight");
+  // if (!chairs) sendResponse(res, 200, true, {}, null, "không tìm thấy đặt chổ");
+  // let flights = [];
+  // for (let i = 0; i < chairs.length; i++) {
+  //   const flight = await Flight.findById(chairs[i].flight._id)
+  //     .populate("airlines")
+  //     .populate("plane");
+  //   flights.push(flight);
+  // }
   await sendResponse(
     res,
     200,
     true,
-    { chairs, flights },
+    { bookings },
     null,
     "get list booking success"
   );
@@ -196,7 +219,7 @@ chairController.cancelFLight = catchAsync(async (req, res, next) => {
     const date = new Date(chair.dateBooking).getDate() + 3;
     const month = new Date(chair.dateBooking).getMonth();
     const year = new Date(chair.dateBooking).getFullYear();
-    console.log(chair);
+
     if (new Date(year, month, date) >= new Date()) {
       chair = await Chair.findByIdAndUpdate(
         chairId,
@@ -208,21 +231,24 @@ chairController.cancelFLight = catchAsync(async (req, res, next) => {
         { new: true }
       );
       await calculateUSerBookingCount({ flight, chair });
-      let chairs = await Chair.find({ user: currentUserId }).populate("flight");
-      if (!chairs)
-        sendResponse(res, 200, true, {}, null, "không tìm thấy đặt chổ");
-      let flights = [];
-      for (let i = 0; i < chairs.length; i++) {
-        const flight = await Flight.findById(chairs[i].flight._id)
-          .populate("airlines")
-          .populate("plane");
-        flights.push(flight);
-      }
+      const booking = await Booking.deleteOne({chair: chairId})
+      const bookings = await Booking.find({user: currentUserId})
+      // let chairs = await Chair.find({ user: currentUserId }).populate("flight");
+      // if (!chairs)
+      //   sendResponse(res, 200, true, {}, null, "không tìm thấy đặt chổ");
+
+      // let flights = [];
+      // for (let i = 0; i < chairs.length; i++) {
+      //   const flight = await Flight.findById(chairs[i].flight._id)
+      //     .populate("airlines")
+      //     .populate("plane");
+      //   flights.push(flight);
+      // }
       await sendResponse(
         res,
         200,
         true,
-        { chair, flights },
+        { chair, bookings },
         null,
         "cancel flight success"
       );
