@@ -8,7 +8,7 @@ const airlinesSchema = Schema(
       requrired: true,
     },
     countPlane: { type: Number, requrired: true, default: 0 },
-    // userCreate: { type: Schema.Types.ObjectId, requrired: true, ref: "User" },
+    userCreate: { type: Schema.Types.ObjectId, requrired: true, ref: "User" },
     imageUrl: { type: String, requrired: true, default: "" },
   },
   { timestamps: true }

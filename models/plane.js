@@ -10,7 +10,7 @@ const planeSchema = Schema(
       required: true,
       ref: "Airlines",
     },
-    // userCreate: { type: Schema.Types.ObjectId, required: true, ref: "User" },
+    userCreate: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     chairCount: { type: Number, required: true, default: 24 },
     rowChairCount: { type: Number, required: true, default: 4 },
   },
